@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <title>PC Finance — Personal Tracker</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{color-scheme:dark;--bg:#080e19;--panel:#111b2b;--panel2:#172337;--line:#26364d;--muted:#8fa1b9;--text:#edf3fb;--green:#36d399;--red:#fb7185;--blue:#7aa7ff;--gold:#fbbf24}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 10% 0%,#14233a 0,transparent 34%),var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+    button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:11px;padding:11px 15px;background:var(--green);color:#06251c;font-weight:750}
+    button.secondary{background:#24334a;color:var(--text);border:1px solid var(--line)}button.danger{background:#482330;color:#ffd9df;border:1px solid #713044}
+    input,select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0b1422;color:var(--text);outline:none}
+    input:focus,select:focus{border-color:var(--green)}label{display:block;color:var(--muted);font-size:13px;margin:0 0 6px}
+    .wrap{max-width:1120px;margin:auto;padding:24px 18px 60px}.top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:22px}
+    .brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#36d399,#138c70);display:grid;place-items:center;color:#06251c;font-weight:900;font-size:21px}
+    h1{font-size:21px;margin:0}.sub{color:var(--muted);font-size:12px}.top-actions{display:flex;gap:8px;align-items:center}
+    .panel{background:linear-gradient(145deg,rgba(21,33,51,.97),rgba(14,24,39,.97));border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 12px 35px #0002}
+    .auth{max-width:440px;margin:8vh auto}.auth h2{margin:0 0 5px}.auth p{color:var(--muted);margin:0 0 18px}.stack{display:grid;gap:13px}.auth small{color:var(--muted)}
+    .hidden{display:none!important}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:16px}
+    .metric .label{color:var(--muted);font-size:13px}.metric .value{font-size:25px;font-weight:800;margin-top:6px;letter-spacing:-.5px}.income{color:var(--green)}.expense{color:var(--red)}.balance{color:var(--blue)}.saving{color:var(--gold)}
+    .content{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.section-head h2{font-size:17px;margin:0}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}.radio{display:flex;gap:8px}.radio button{flex:1;background:#202e43;color:var(--muted);border:1px solid var(--line)}.radio button.active{background:#123b32;color:var(--green);border-color:#24795f}
+    .table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:500px}th,td{text-align:left;padding:12px 9px;border-bottom:1px solid #26364d;font-size:13px}th{color:var(--muted);font-weight:600}td.amount{text-align:right;font-weight:750}.tag{padding:4px 8px;border-radius:30px;background:#223148;color:#c7d5e8;font-size:11px}
+    .filters{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}.empty{text-align:center;color:var(--muted);padding:28px 8px}
+    .barrow{display:grid;grid-template-columns:90px 1fr 90px;gap:9px;align-items:center;margin:12px 0;font-size:12px;color:var(--muted)}.track{height:9px;background:#26364d;border-radius:20px;overflow:hidden}.fill{height:100%;background:var(--red);border-radius:20px}
+    .notice{padding:11px 13px;border-radius:10px;background:#172b2b;color:#9ee9cd;font-size:12px;margin-top:12px}.error{background:#3b2029;color:#ffc4ce}.foot{color:var(--muted);font-size:11px;text-align:center;margin-top:22px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{font-size:12px;padding:9px 11px}.muted{color:var(--muted)}.right{text-align:right}
+    @media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.content{grid-template-columns:1fr}.wrap{padding:17px 12px 40px}}
+    @media(max-width:430px){.top{align-items:flex-start}.top-actions{flex-direction:column;align-items:stretch}.metric .value{font-size:21px}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.filters{grid-template-columns:1fr}}
+    @media print{body{background:#fff;color:#111}.wrap{max-width:none;padding:0}.top-actions,.no-print,.auth{display:none!important}.panel,.metric{background:#fff;color:#111;border:1px solid #ccc;box-shadow:none;break-inside:avoid}.muted,.sub,.metric .label,th{color:#555}.grid{grid-template-columns:repeat(4,1fr)}.content{display:block}.content>.panel{margin-bottom:14px}table{min-width:0}td,th{color:#111;border-color:#ddd}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="top">
+      <div class="brand"><div class="logo">৳</div><div><h1>My Finance</h1><div class="sub">PERSONAL INCOME & EXPENSE TRACKER</div></div></div>
+      <div class="top-actions hidden" id="topActions"><span class="sub" id="userEmail"></span><button class="secondary" id="logoutBtn">Log out</button></div>
+    </header>
+
+    <section class="panel auth" id="authPanel">
+      <h2>আপনার অ্যাকাউন্টে প্রবেশ করুন</h2><p>নিজের আয়-ব্যয়ের হিসাব ক্লাউডে নিরাপদে রাখুন।</p>
+      <div class="stack">
+        <div><label>ইমেইল</label><input id="email" type="email" placeholder="you@example.com" autocomplete="email"></div>
+        <div><label>পাসওয়ার্ড</label><input id="password" type="password" placeholder="কমপক্ষে ৬ অক্ষর" autocomplete="current-password"></div>
+        <div class="actions"><button id="loginBtn">Log in</button><button class="secondary" id="signupBtn">Create account</button></div>
+        <div id="authMsg" class="notice hidden"></div>
+        <small>প্রথমবার হলে Create account চাপুন। ইমেইল কনফার্মেশন চালু থাকলে ইনবক্সে আসা লিংকটি খুলুন।</small>
+      </div>
+    </section>
+
+    <section id="appPanel" class="hidden">
+      <div class="grid">
+        <div class="panel metric"><div class="label">মোট ব্যালেন্স</div><div class="value balance" id="balance">৳0</div></div>
+        <div class="panel metric"><div class="label">এই মাসের আয়</div><div class="value income" id="monthIncome">৳0</div></div>
+        <div class="panel metric"><div class="label">এই মাসের ব্যয়</div><div class="value expense" id="monthExpense">৳0</div></div>
+        <div class="panel metric"><div class="label">এই মাসের সঞ্চয়</div><div class="value saving" id="monthSaving">৳0</div></div>
+      </div>
+
+      <div class="content">
+        <section class="panel">
+          <div class="section-head"><h2>নতুন লেনদেন</h2><span class="tag">Add transaction</span></div>
+          <form id="transactionForm" class="form-grid">
+            <div class="full"><label>লেনদেনের ধরন</label><div class="radio"><button type="button" class="active" data-kind="expense">ব্যয়</button><button type="button" data-kind="income">আয়</button></div></div>
+            <div><label>টাকার পরিমাণ (৳)</label><input id="amount" type="number" min="0.01" step="0.01" placeholder="যেমন ৫০০" required></div>
+            <div><label>তারিখ</label><input id="date" type="date" required></div>
+            <div><label>ক্যাটাগরি</label><select id="category" required></select></div>
+            <div><label>পেমেন্ট মাধ্যম</label><select id="method"><option>Cash</option><option>Bank</option><option>bKash</option><option>Nagad</option><option>Card</option><option>Other</option></select></div>
+            <div class="full"><label>বিবরণ (ঐচ্ছিক)</label><input id="note" maxlength="180" placeholder="যেমন: বাজার / বেতন / যাতায়াত"></div>
+            <div class="full"><button type="submit" id="saveBtn">লেনদেন সংরক্ষণ করুন</button></div>
+          </form>
+          <div id="formMsg" class="notice hidden"></div>
+        </section>
+
+        <section class="panel">
+          <div class="section-head"><h2>মাসিক ব্যয়ের সারাংশ</h2><span class="tag" id="chartMonth"></span></div>
+          <div id="expenseChart"><div class="empty">এখনো কোনো ব্যয়ের তথ্য নেই।</div></div>
+          <div class="notice">আপনার তথ্য আপনার Supabase অ্যাকাউন্টে সংরক্ষিত হবে। অন্য কারও সঙ্গে লগইন তথ্য শেয়ার করবেন না।</div>
+        </section>
+      </div>
+
+      <section class="panel" style="margin-top:16px">
+        <div class="section-head"><h2>লেনদেনের ইতিহাস</h2><div class="actions no-print"><button class="secondary" id="csvBtn">Export CSV</button><button class="secondary" id="pdfBtn">Save PDF</button></div></div>
+        <div class="filters no-print"><input id="search" placeholder="বিবরণ বা ক্যাটাগরি খুঁজুন"><input id="monthFilter" type="month"></div>
+        <div class="table-wrap"><table><thead><tr><th>তারিখ</th><th>ধরন / ক্যাটাগরি</th><th>বিবরণ</th><th>মাধ্যম</th><th class="right">পরিমাণ</th><th class="no-print"> </th></tr></thead><tbody id="transactionRows"></tbody></table><div class="empty hidden" id="noRows">কোনো লেনদেন পাওয়া যায়নি।</div></div>
+      </section>
+    </section>
+    <div class="foot">MY FINANCE • Personal use only • Keep your account credentials private</div>
+  </main>
+
+<script>
+(() => {
+  // STEP 1: Replace these two values with your Supabase project credentials.
+  const SUPABASE_URL = "sb_publishable_E_XohLIMEBJ7JvrfKBQ7TA_lPCr4T0r";
+  const SUPABASE_ANON_KEY = "Ysb_secret_YxMNCx8FLaJPfLWgCE2EWA_pRiQKK5o";
+  const $ = id => document.getElementById(id);
+  const isConfigured = SUPABASE_URL.startsWith("https://") && !SUPABASE_ANON_KEY.startsWith("YOUR_");
+  let db = null, user = null, transactions = [], kind = "expense";
+  const expenseCats = ["খাবার","বাসা ভাড়া","যাতায়াত","শপিং","বিল ও ইউটিলিটি","চিকিৎসা","বিনোদন","শিক্ষা","পরিবার","অন্যান্য"];
+  const incomeCats = ["বেতন","ব্যবসা","ফ্রিল্যান্সিং","বোনাস","বিনিয়োগ","উপহার","অন্যান্য"];
+  const money = n => "৳" + Number(n||0).toLocaleString("en-BD",{maximumFractionDigits:2});
+  const today = new Date().toISOString().slice(0,10);
+  $("date").value = today; $("monthFilter").value = today.slice(0,7);
+  $("chartMonth").textContent = new Date().toLocaleDateString("bn-BD",{month:"long",year:"numeric"});
+  function setMsg(id,msg,error=false){$(id).textContent=msg;$(id).classList.remove("hidden","error");if(error)$(id).classList.add("error");}
+  function categories(){const list=kind==="income"?incomeCats:expenseCats;$("category").innerHTML=list.map(x=>`<option>${x}</option>`).join("");}
+  document.querySelectorAll("[data-kind]").forEach(b=>b.addEventListener("click",()=>{kind=b.dataset.kind;document.querySelectorAll("[data-kind]").forEach(x=>x.classList.toggle("active",x===b));categories();}));
+  categories();
+
+  async function init(){
+    if(!isConfigured){setMsg("authMsg","অ্যাপের ক্লাউড সংযোগ চালু করতে README ফাইলের Supabase সেটআপ সম্পন্ন করে index.html-এ URL ও anon key বসান।",true);$("authMsg").classList.remove("hidden");return;}
+    db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    const {data:{session}}=await db.auth.getSession();
+    if(session){user=session.user;showApp();}
+    db.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;if(user)showApp();else showAuth();});
+  }
+  function showAuth(){$("authPanel").classList.remove("hidden");$("appPanel").classList.add("hidden");$("topActions").classList.add("hidden");}
+  async function showApp(){$("authPanel").classList.add("hidden");$("appPanel").classList.remove("hidden");$("topActions").classList.remove("hidden");$("userEmail").textContent=user.email||"";await loadTransactions();}
+  $("signupBtn").onclick=async()=>{if(!db)return;const email=$("email").value.trim(),password=$("password").value;if(!email||password.length<6)return setMsg("authMsg","সঠিক ইমেইল দিন এবং অন্তত ৬ অক্ষরের পাসওয়ার্ড ব্যবহার করুন।",true);const {error}=await db.auth.signUp({email,password});if(error)setMsg("authMsg",error.message,true);else setMsg("authMsg","অ্যাকাউন্ট তৈরি হয়েছে। ইমেইল কনফার্মেশন চাইলে ইনবক্স দেখুন।");};
+  $("loginBtn").onclick=async()=>{if(!db)return;const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error)setMsg("authMsg",error.message,true);};
+  $("logoutBtn").onclick=async()=>{await db.auth.signOut();};
+  async function loadTransactions(){const {data,error}=await db.from("transactions").select("*").order("transaction_date",{ascending:false}).order("created_at",{ascending:false});if(error){setMsg("formMsg","ডেটা লোড করা যায়নি: "+error.message,true);return;}transactions=data||[];render();}
+  $("transactionForm").onsubmit=async e=>{e.preventDefault();if(!user)return;const amount=Number($("amount").value);if(!(amount>0))return setMsg("formMsg","সঠিক পরিমাণ লিখুন।",true);$("saveBtn").disabled=true;
+    const payload={user_id:user.id,type:kind,amount,category:$("category").value,transaction_date:$("date").value,payment_method:$("method").value,note:$("note").value.trim()};
+    const {error}=await db.from("transactions").insert(payload);$("saveBtn").disabled=false;
+    if(error){setMsg("formMsg","সংরক্ষণ হয়নি: "+error.message,true);return;}
+    $("amount").value="";$("note").value="";setMsg("formMsg","লেনদেন সফলভাবে সংরক্ষিত হয়েছে।");await loadTransactions();
+  };
+  async function removeTransaction(id){if(!confirm("এই লেনদেনটি মুছে ফেলতে চান?"))return;const {error}=await db.from("transactions").delete().eq("id",id);if(error)alert(error.message);else await loadTransactions();}
+  function render(){
+    const month=today.slice(0,7),mi=transactions.filter(t=>t.type==="income"&&t.transaction_date.startsWith(month)).reduce((s,t)=>s+Number(t.amount),0),me=transactions.filter(t=>t.type==="expense"&&t.transaction_date.startsWith(month)).reduce((s,t)=>s+Number(t.amount),0);
+    const ti=transactions.filter(t=>t.type==="income").reduce((s,t)=>s+Number(t.amount),0),te=transactions.filter(t=>t.type==="expense").reduce((s,t)=>s+Number(t.amount),0);
+    $("balance").textContent=money(ti-te);$("monthIncome").textContent=money(mi);$("monthExpense").textContent=money(me);$("monthSaving").textContent=money(mi-me);
+    const groups={};transactions.filter(t=>t.type==="expense"&&t.transaction_date.startsWith(month)).forEach(t=>groups[t.category]=(groups[t.category]||0)+Number(t.amount));
+    const max=Math.max(1,...Object.values(groups));$("expenseChart").innerHTML=Object.keys(groups).length?Object.entries(groups).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<div class="barrow"><span>${escapeHtml(c)}</span><div class="track"><div class="fill" style="width:${v/max*100}%"></div></div><b class="right">${money(v)}</b></div>`).join(""):'<div class="empty">এখনো কোনো ব্যয়ের তথ্য নেই।</div>';
+    const q=$("search").value.toLowerCase(),m=$("monthFilter").value;
+    const filtered=transactions.filter(t=>(!m||t.transaction_date.startsWith(m))&&(!q||[t.note,t.category,t.payment_method].join(" ").toLowerCase().includes(q)));
+    $("transactionRows").innerHTML=filtered.map(t=>`<tr><td>${t.transaction_date}</td><td><span class="tag">${t.type==="income"?"আয়":"ব্যয়"}</span> ${escapeHtml(t.category)}</td><td>${escapeHtml(t.note||"—")}</td><td>${escapeHtml(t.payment_method||"—")}</td><td class="amount ${t.type}">${t.type==="income"?"+":"−"}${money(t.amount)}</td><td class="no-print"><button class="danger" style="padding:6px 9px" data-delete="${t.id}">মুছুন</button></td></tr>`).join("");
+    $("noRows").classList.toggle("hidden",filtered.length>0);
+    document.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>removeTransaction(b.dataset.delete));
+  }
+  function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+  $("search").oninput=render;$("monthFilter").onchange=render;
+  $("csvBtn").onclick=()=>{const rows=[["Date","Type","Category","Amount BDT","Payment Method","Note"],...transactions.map(t=>[t.transaction_date,t.type,t.category,t.amount,t.payment_method||"",t.note||""])];const csv="\uFEFF"+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="my-finance-transactions.csv";a.click();URL.revokeObjectURL(a.href);};
+  $("pdfBtn").onclick=()=>window.print();
+  if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  init();
+})();
+</script>
+</body>
+</html>
